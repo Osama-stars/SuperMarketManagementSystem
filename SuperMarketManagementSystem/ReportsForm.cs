@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data.SqlClient;
 using SupermarketManagementSystem.Data;
+using System.Data.SQLite;
 using SupermarketManagementSystem.Helpers;
 
 namespace SuperMarketManagementSystem
@@ -39,7 +39,7 @@ namespace SuperMarketManagementSystem
 
         private void LoadReport()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT
@@ -57,17 +57,17 @@ namespace SuperMarketManagementSystem
               AND s.SaleDate < @ToDate
             ORDER BY s.SaleDate DESC";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     adapter.SelectCommand.Parameters.Add(
                         "@FromDate",
-                        SqlDbType.DateTime).Value =
+                        DbType.DateTime).Value =
                         dtpFrom.Value.Date;
 
                     adapter.SelectCommand.Parameters.Add(
                         "@ToDate",
-                        SqlDbType.DateTime).Value =
+                        DbType.DateTime).Value =
                         dtpTo.Value.Date.AddDays(1);
 
                     DataTable table = new DataTable();

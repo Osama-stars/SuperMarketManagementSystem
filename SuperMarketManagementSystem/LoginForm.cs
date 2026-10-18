@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,8 @@ namespace SuperMarketManagementSystem
         string lParam);
 
         private const int EM_SETCUEBANNER = 0x1501;
+        private SQLiteCommand cmd;
+
         public LoginForm()
         {
             InitializeComponent();
@@ -56,7 +59,7 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT UserID, Username
@@ -64,14 +67,16 @@ namespace SuperMarketManagementSystem
             WHERE Username = @Username
             AND Password = @Password";
 
-                using (SqlCommand cmd = new SqlCommand(query, con))
+                using (
+                    
+                    cmd = new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@Username", username);
                     cmd.Parameters.AddWithValue("@Password", password);
 
                     con.Open();
 
-                    SqlDataReader reader = cmd.ExecuteReader();
+                    SQLiteDataReader reader = cmd.ExecuteReader();
 
                     if (reader.Read())
                     {

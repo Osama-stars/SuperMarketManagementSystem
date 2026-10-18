@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SupermarketManagementSystem.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace SuperMarketManagementSystem
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new LoginForm());
+            Database.InitializeDatabase();
+            Application.Run(new MainForm(0));
         }
     }
 }

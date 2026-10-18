@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data.SqlClient;
+using System.Data.SQLite;
 using SupermarketManagementSystem.Data;
 using SupermarketManagementSystem.Helpers;
 
@@ -39,15 +39,15 @@ namespace SuperMarketManagementSystem
 
         private void LoadCategories()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT CategoryID, CategoryName
             FROM Categories
             ORDER BY CategoryName";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     DataTable table = new DataTable();
 
@@ -63,7 +63,7 @@ namespace SuperMarketManagementSystem
 
         private void LoadProducts()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT
@@ -78,8 +78,8 @@ namespace SuperMarketManagementSystem
                 ON p.CategoryID = c.CategoryID
             ORDER BY p.ProductID";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     DataTable table = new DataTable();
 
@@ -119,7 +119,7 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             INSERT INTO Products
@@ -137,25 +137,25 @@ namespace SuperMarketManagementSystem
                 @CategoryID
             )";
 
-                using (SqlCommand cmd =
-                       new SqlCommand(query, con))
+                using (SQLiteCommand cmd =
+                       new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.Add(
                         "@ProductName",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         txtProductName.Text.Trim();
 
                     cmd.Parameters.Add(
                         "@Price",
-                        SqlDbType.Decimal).Value = price;
+                        DbType.Decimal).Value = price;
 
                     cmd.Parameters.Add(
                         "@Quantity",
-                        SqlDbType.Int).Value = quantity;
+                        DbType.Int32).Value = quantity;
 
                     cmd.Parameters.Add(
                         "@CategoryID",
-                        SqlDbType.Int).Value =
+                        DbType.Int32).Value =
                         cmbCategory.SelectedValue;
 
                     con.Open();
@@ -246,7 +246,7 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             UPDATE Products
@@ -257,30 +257,30 @@ namespace SuperMarketManagementSystem
                 CategoryID = @CategoryID
             WHERE ProductID = @ProductID";
 
-                using (SqlCommand cmd =
-                       new SqlCommand(query, con))
+                using (SQLiteCommand cmd =
+                       new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.Add(
                         "@ProductName",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         txtProductName.Text.Trim();
 
                     cmd.Parameters.Add(
                         "@Price",
-                        SqlDbType.Decimal).Value = price;
+                        DbType.Decimal).Value = price;
 
                     cmd.Parameters.Add(
                         "@Quantity",
-                        SqlDbType.Int).Value = quantity;
+                        DbType.Int32).Value = quantity;
 
                     cmd.Parameters.Add(
                         "@CategoryID",
-                        SqlDbType.Int).Value =
+                        DbType.Int32).Value =
                         cmbCategory.SelectedValue;
 
                     cmd.Parameters.Add(
                         "@ProductID",
-                        SqlDbType.Int).Value =
+                        DbType.Int32).Value =
                         selectedProductID;
 
                     con.Open();
@@ -322,18 +322,18 @@ namespace SuperMarketManagementSystem
 
             try
             {
-                using (SqlConnection con = Database.GetConnection())
+                using (SQLiteConnection con = Database.GetConnection())
                 {
                     string query = @"
                 DELETE FROM Products
                 WHERE ProductID = @ProductID";
 
-                    using (SqlCommand cmd =
-                           new SqlCommand(query, con))
+                    using (SQLiteCommand cmd =
+                           new SQLiteCommand(query, con))
                     {
                         cmd.Parameters.Add(
                             "@ProductID",
-                            SqlDbType.Int).Value =
+                            DbType.Int32).Value =
                             selectedProductID;
 
                         con.Open();
@@ -355,7 +355,7 @@ namespace SuperMarketManagementSystem
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (SQLiteException ex)
             {
                 MessageBox.Show(
                     ex.Message,
@@ -368,7 +368,7 @@ namespace SuperMarketManagementSystem
 
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT
@@ -384,12 +384,12 @@ namespace SuperMarketManagementSystem
             WHERE p.ProductName LIKE @Search
             ORDER BY p.ProductID";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     adapter.SelectCommand.Parameters.Add(
                         "@Search",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         "%" + txtSearch.Text.Trim() + "%";
 
                     DataTable table = new DataTable();

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data.SqlClient;
+using System.Data.SQLite;
 using SupermarketManagementSystem.Data;
 using SupermarketManagementSystem.Helpers;
 
@@ -41,15 +41,15 @@ namespace SuperMarketManagementSystem
 
         private void LoadCategories()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT CategoryID, CategoryName
             FROM Categories
             ORDER BY CategoryID";
 
-                SqlDataAdapter adapter =
-                    new SqlDataAdapter(query, con);
+                SQLiteDataAdapter adapter =
+                    new SQLiteDataAdapter(query, con);
 
                 DataTable table = new DataTable();
 
@@ -73,13 +73,13 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             INSERT INTO Categories (CategoryName)
             VALUES (@CategoryName)";
 
-                using (SqlCommand cmd = new SqlCommand(query, con))
+                using (SQLiteCommand cmd = new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue(
                         "@CategoryName",
@@ -159,17 +159,17 @@ namespace SuperMarketManagementSystem
 
             try
             {
-                using (SqlConnection con = Database.GetConnection())
+                using (SQLiteConnection con = Database.GetConnection())
                 {
                     string query =
                         "DELETE FROM Categories WHERE CategoryID = @CategoryID";
 
-                    using (SqlCommand cmd =
-                           new SqlCommand(query, con))
+                    using (SQLiteCommand cmd =
+                           new SQLiteCommand(query, con))
                     {
                         cmd.Parameters.Add(
                             "@CategoryID",
-                            SqlDbType.Int).Value = selectedCategoryID;
+                            DbType.Int32).Value = selectedCategoryID;
 
                         con.Open();
 
@@ -189,7 +189,7 @@ namespace SuperMarketManagementSystem
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (SQLiteException ex)
             {
                 MessageBox.Show(
                     "Cannot delete this category.\n\n" +
@@ -206,7 +206,7 @@ namespace SuperMarketManagementSystem
         }
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT CategoryID, CategoryName
@@ -214,8 +214,8 @@ namespace SuperMarketManagementSystem
             WHERE CategoryName LIKE @Search
             ORDER BY CategoryID";
 
-                SqlDataAdapter adapter =
-                    new SqlDataAdapter(query, con);
+                SQLiteDataAdapter adapter =
+                    new SQLiteDataAdapter(query, con);
 
                 adapter.SelectCommand.Parameters.AddWithValue(
                     "@Search",
@@ -254,14 +254,14 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             UPDATE Categories
             SET CategoryName = @CategoryName
             WHERE CategoryID = @CategoryID";
 
-                using (SqlCommand cmd = new SqlCommand(query, con))
+                using (SQLiteCommand cmd = new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue(
                         "@CategoryName",

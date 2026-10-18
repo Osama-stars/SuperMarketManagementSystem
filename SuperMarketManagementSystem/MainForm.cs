@@ -98,6 +98,10 @@ namespace SuperMarketManagementSystem
                 ? "نظام إدارة سوبر ماركت"
                 : "Supermarket management System";
 
+            btnLanguage.Text = LanguageManager.IsArabic
+                ? "English"
+                : "العربية";
+
             btnProducts.Text = ar ? "المنتجات" : "Products";
             btnCategories.Text = ar ? "التصنيفات" : "Categories";
             btnCustomers.Text = ar ? "العملاء" : "Customers";
@@ -120,6 +124,19 @@ namespace SuperMarketManagementSystem
         {
             LanguageManager.LanguageChanged -= UpdateLanguage;
             base.OnFormClosed(e);
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnLanguage_Click(object sender, EventArgs e)
+        {
+            LanguageManager.SetLanguage(
+                LanguageManager.IsArabic ? "en" : "ar");
+
+            UpdateLanguage();
         }
     }
 }

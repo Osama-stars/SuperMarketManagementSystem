@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SQLite;
 using SupermarketManagementSystem.Data;
 using SupermarketManagementSystem.Helpers;
 
@@ -16,6 +16,8 @@ namespace SuperMarketManagementSystem
     public partial class CustomersForm : Form
     {
         private int selectedCustomerID = 0;
+        private SQLiteCommand cmd;
+
         public CustomersForm()
         {
             InitializeComponent();
@@ -29,7 +31,7 @@ namespace SuperMarketManagementSystem
 
         private void LoadCustomers()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT
@@ -39,8 +41,8 @@ namespace SuperMarketManagementSystem
             FROM Customers
             ORDER BY CustomerID";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     DataTable table = new DataTable();
 
@@ -64,7 +66,7 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             INSERT INTO Customers
@@ -78,17 +80,18 @@ namespace SuperMarketManagementSystem
                 @Phone
             )";
 
-                using (SqlCommand cmd =
-                       new SqlCommand(query, con))
+                using (
+                    cmd =
+                       new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.Add(
                         "@CustomerName",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         txtCustomerName.Text.Trim();
 
                     cmd.Parameters.Add(
                         "@Phone",
-                        SqlDbType.NVarChar, 20).Value =
+                        DbType.String, 20).Value =
                         txtPhone.Text.Trim();
 
                     con.Open();
@@ -169,7 +172,7 @@ namespace SuperMarketManagementSystem
                 return;
             }
 
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             UPDATE Customers
@@ -178,22 +181,22 @@ namespace SuperMarketManagementSystem
                 Phone = @Phone
             WHERE CustomerID = @CustomerID";
 
-                using (SqlCommand cmd =
-                       new SqlCommand(query, con))
+                using (SQLiteCommand cmd =
+                       new SQLiteCommand(query, con))
                 {
                     cmd.Parameters.Add(
                         "@CustomerName",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         txtCustomerName.Text.Trim();
 
                     cmd.Parameters.Add(
                         "@Phone",
-                        SqlDbType.NVarChar, 20).Value =
+                        DbType.String, 20).Value =
                         txtPhone.Text.Trim();
 
                     cmd.Parameters.Add(
                         "@CustomerID",
-                        SqlDbType.Int).Value =
+                        DbType.Int32).Value =
                         selectedCustomerID;
 
                     con.Open();
@@ -238,18 +241,18 @@ namespace SuperMarketManagementSystem
 
             try
             {
-                using (SqlConnection con = Database.GetConnection())
+                using (SQLiteConnection con = Database.GetConnection())
                 {
                     string query = @"
                 DELETE FROM Customers
                 WHERE CustomerID = @CustomerID";
 
-                    using (SqlCommand cmd =
-                           new SqlCommand(query, con))
+                    using (SQLiteCommand cmd =
+                           new SQLiteCommand(query, con))
                     {
                         cmd.Parameters.Add(
                             "@CustomerID",
-                            SqlDbType.Int).Value =
+                            DbType.Int32).Value =
                             selectedCustomerID;
 
                         con.Open();
@@ -277,7 +280,7 @@ namespace SuperMarketManagementSystem
                     }
                 }
             }
-            catch (SqlException ex)
+            catch (SQLiteException ex)
             {
                 MessageBox.Show(
                     "This customer may already have sales.\n\n" +
@@ -290,7 +293,7 @@ namespace SuperMarketManagementSystem
 
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT
@@ -302,12 +305,12 @@ namespace SuperMarketManagementSystem
                OR Phone LIKE @Search
             ORDER BY CustomerID";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     adapter.SelectCommand.Parameters.Add(
                         "@Search",
-                        SqlDbType.NVarChar, 100).Value =
+                        DbType.String, 100).Value =
                         "%" + txtSearch.Text.Trim() + "%";
 
                     DataTable table = new DataTable();

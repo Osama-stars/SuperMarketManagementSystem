@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SQLite;
 using SupermarketManagementSystem.Data;
 using SupermarketManagementSystem.Helpers;
 
@@ -17,6 +17,8 @@ namespace SuperMarketManagementSystem
     {
         private int userID;
         private decimal totalAmount = 0;
+        private SQLiteDataAdapter adapter;
+
         public SalesForm(int userID)
         {
             InitializeComponent();
@@ -40,15 +42,17 @@ namespace SuperMarketManagementSystem
 
         private void LoadCustomers()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT CustomerID, CustomerName
             FROM Customers
             ORDER BY CustomerName";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (
+                    
+                    adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     DataTable table = new DataTable();
                     adapter.Fill(table);
@@ -64,7 +68,7 @@ namespace SuperMarketManagementSystem
 
         private void LoadProducts()
         {
-            using (SqlConnection con = Database.GetConnection())
+            using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
             SELECT ProductID, ProductName, Price, Quantity
@@ -72,8 +76,8 @@ namespace SuperMarketManagementSystem
             WHERE Quantity > 0
             ORDER BY ProductName";
 
-                using (SqlDataAdapter adapter =
-                       new SqlDataAdapter(query, con))
+                using (SQLiteDataAdapter adapter =
+                       new SQLiteDataAdapter(query, con))
                 {
                     DataTable table = new DataTable();
                     adapter.Fill(table);
@@ -233,12 +237,12 @@ namespace SuperMarketManagementSystem
 
             try
             {
-                using (SqlConnection con = Database.GetConnection())
+                using (SQLiteConnection con = Database.GetConnection())
                 {
                     con.Open();
 
                     // Start transaction
-                    SqlTransaction transaction = con.BeginTransaction();
+                    SQLiteTransaction transaction = con.BeginTransaction();
 
                     try
                     {
@@ -253,23 +257,23 @@ namespace SuperMarketManagementSystem
 
                         int saleID;
 
-                        using (SqlCommand cmd =
-                               new SqlCommand(saleQuery, con, transaction))
+                        using (SQLiteCommand cmd =
+                               new SQLiteCommand(saleQuery, con, transaction))
                         {
                             cmd.Parameters.Add(
                                 "@CustomerID",
-                                SqlDbType.Int).Value =
+                                DbType.Int32).Value =
                                 customerID.HasValue
                                 ? (object)customerID.Value
                                 : DBNull.Value;
 
                             cmd.Parameters.Add(
                                 "@UserID",
-                                SqlDbType.Int).Value = userID;
+                                DbType.Int32).Value = userID;
 
                             cmd.Parameters.Add(
                                 "@TotalAmount",
-                                SqlDbType.Decimal).Value = totalAmount;
+                                DbType.Decimal).Value = totalAmount;
 
                             saleID = Convert.ToInt32(cmd.ExecuteScalar());
                         }
@@ -299,27 +303,27 @@ namespace SuperMarketManagementSystem
                         VALUES
                         (@SaleID, @ProductID, @Quantity, @Price);";
 
-                            using (SqlCommand cmd =
-                                   new SqlCommand(
+                            using (SQLiteCommand cmd =
+                                   new SQLiteCommand(
                                        detailQuery,
                                        con,
                                        transaction))
                             {
                                 cmd.Parameters.Add(
                                     "@SaleID",
-                                    SqlDbType.Int).Value = saleID;
+                                    DbType.Int32).Value = saleID;
 
                                 cmd.Parameters.Add(
                                     "@ProductID",
-                                    SqlDbType.Int).Value = productID;
+                                    DbType.Int32).Value = productID;
 
                                 cmd.Parameters.Add(
                                     "@Quantity",
-                                    SqlDbType.Int).Value = quantity;
+                                    DbType.Int32).Value = quantity;
 
                                 cmd.Parameters.Add(
                                     "@Price",
-                                    SqlDbType.Decimal).Value = price;
+                                    DbType.Decimal).Value = price;
 
                                 cmd.ExecuteNonQuery();
                             }
@@ -329,19 +333,19 @@ namespace SuperMarketManagementSystem
                         UPDATE Products
                         SET Quantity = Quantity - @Quantity
                         WHERE ProductID = @ProductID
-                        AND Quantity >= @Quantity;"; using (SqlCommand cmd =
-                           new SqlCommand(
+                        AND Quantity >= @Quantity;"; using (SQLiteCommand cmd =
+                           new SQLiteCommand(
                                stockQuery,
                                con,
                                transaction))
                             {
                                 cmd.Parameters.Add(
                                     "@Quantity",
-                                    SqlDbType.Int).Value = quantity;
+                                    DbType.Int32).Value = quantity;
 
                                 cmd.Parameters.Add(
                                     "@ProductID",
-                                    SqlDbType.Int).Value = productID;
+                                    DbType.Int32).Value = productID;
 
                                 int rowsAffected =
                                     cmd.ExecuteNonQuery();

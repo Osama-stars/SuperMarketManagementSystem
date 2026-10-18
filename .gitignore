@@ -1,0 +1,12 @@
+# Visual Studio temporary files
+.vs/
+
+# Build output
+**/bin/
+**/obj/
+
+# User-specific settings
+*.user
+*.suo
+
+# SQLite generated native binaries
