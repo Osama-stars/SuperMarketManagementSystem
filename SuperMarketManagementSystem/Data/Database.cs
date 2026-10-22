@@ -98,6 +98,36 @@ namespace SupermarketManagementSystem.Data
                 {
                     command.ExecuteNonQuery();
                 }
+
+                using (var command = new SQLiteCommand(
+    "PRAGMA table_info(Products);", connection))
+                {
+                    bool hasUnit = false;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (string.Equals(
+                                reader["name"].ToString(),
+                                "Unit",
+                                StringComparison.OrdinalIgnoreCase))
+                            {
+                                hasUnit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!hasUnit)
+                    {
+                        using (var alterCommand = new SQLiteCommand(
+                            "ALTER TABLE Products ADD COLUMN Unit TEXT NOT NULL DEFAULT 'piece';",
+                            connection))
+                        {
+                            alterCommand.ExecuteNonQuery();
+                        }
+                    }
+                }
             }
         }
     }

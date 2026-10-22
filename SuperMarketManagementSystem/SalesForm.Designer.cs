@@ -49,6 +49,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.btnPrintBill = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuantity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCart)).BeginInit();
             this.panel1.SuspendLayout();
@@ -62,7 +63,7 @@
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(187, 150);
+            this.label2.Location = new System.Drawing.Point(195, 150);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(179, 51);
             this.label2.TabIndex = 4;
@@ -216,9 +217,9 @@
             this.btnCompleteSale.BackColor = System.Drawing.Color.White;
             this.btnCompleteSale.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCompleteSale.ForeColor = System.Drawing.Color.Black;
-            this.btnCompleteSale.Location = new System.Drawing.Point(193, 662);
+            this.btnCompleteSale.Location = new System.Drawing.Point(33, 650);
             this.btnCompleteSale.Name = "btnCompleteSale";
-            this.btnCompleteSale.Size = new System.Drawing.Size(227, 112);
+            this.btnCompleteSale.Size = new System.Drawing.Size(220, 101);
             this.btnCompleteSale.TabIndex = 33;
             this.btnCompleteSale.Text = "Complete Sale";
             this.btnCompleteSale.UseVisualStyleBackColor = false;
@@ -265,6 +266,7 @@
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.btnPrintBill);
             this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.btnCompleteSale);
             this.panel2.Controls.Add(this.cmbProduct);
@@ -306,6 +308,19 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(1275, 998);
             this.panel3.TabIndex = 0;
+            // 
+            // btnPrintBill
+            // 
+            this.btnPrintBill.BackColor = System.Drawing.Color.White;
+            this.btnPrintBill.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPrintBill.ForeColor = System.Drawing.Color.Black;
+            this.btnPrintBill.Location = new System.Drawing.Point(355, 661);
+            this.btnPrintBill.Name = "btnPrintBill";
+            this.btnPrintBill.Size = new System.Drawing.Size(220, 90);
+            this.btnPrintBill.TabIndex = 34;
+            this.btnPrintBill.Text = "Print Bill";
+            this.btnPrintBill.UseVisualStyleBackColor = false;
+            this.btnPrintBill.Click += new System.EventHandler(this.btnPrintBill_Click);
             // 
             // SalesForm
             // 
@@ -354,5 +369,6 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Button btnPrintBill;
     }
 }

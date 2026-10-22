@@ -56,6 +56,7 @@ namespace SuperMarketManagementSystem
                 adapter.Fill(table);
 
                 dgvCategories.DataSource = table;
+                FormatCategoriesGrid();
             }
         }
 
@@ -142,63 +143,106 @@ namespace SuperMarketManagementSystem
 
         private void btnDelete_Click_1(object sender, EventArgs e)
         {
+            bool ar = LanguageManager.IsArabic;
+
             if (selectedCategoryID == 0)
             {
-                MessageBox.Show("Please select a category first.");
+                MessageBox.Show(
+                    ar
+                        ? "يرجى اختيار فئة أولاً."
+                        : "Please select a category first.",
+                    ar ? "تنبيه" : "Warning",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
                 return;
             }
-
-            DialogResult result = MessageBox.Show(
-                "Are you sure you want to delete this category?",
-                "Confirm Delete",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (result != DialogResult.Yes)
-                return;
 
             try
             {
                 using (SQLiteConnection con = Database.GetConnection())
                 {
-                    string query =
-                        "DELETE FROM Categories WHERE CategoryID = @CategoryID";
+                    con.Open();
+
+                    // Check whether products use this category
+                    string checkQuery = @"
+                SELECT COUNT(*)
+                FROM Products
+                WHERE CategoryID = @CategoryID;";
 
                     using (SQLiteCommand cmd =
-                           new SQLiteCommand(query, con))
+                           new SQLiteCommand(checkQuery, con))
                     {
-                        cmd.Parameters.Add(
-                            "@CategoryID",
-                            DbType.Int32).Value = selectedCategoryID;
+                        cmd.Parameters.AddWithValue(
+                            "@CategoryID", selectedCategoryID);
 
-                        con.Open();
+                        int productCount =
+                            Convert.ToInt32(cmd.ExecuteScalar());
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
-
-                        if (rowsAffected > 0)
+                        if (productCount > 0)
                         {
-                            MessageBox.Show("Category deleted successfully.");
+                            MessageBox.Show(
+                                ar
+                                    ? "لا يمكن حذف هذه الفئة لأنها مرتبطة بمنتج واحد أو أكثر."
+                                    : "This category cannot be deleted because it is assigned to one or more products.",
+                                ar ? "تعذر حذف الفئة" : "Cannot Delete Category",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
 
-                            LoadCategories();
-                            ClearFields();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Category was not found.");
+                            return;
                         }
                     }
+
+                    // Confirm deletion
+                    DialogResult result = MessageBox.Show(
+                        ar
+                            ? "هل أنت متأكد أنك تريد حذف هذه الفئة؟"
+                            : "Are you sure you want to delete this category?",
+                        ar ? "تأكيد الحذف" : "Confirm Delete",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (result != DialogResult.Yes)
+                        return;
+
+                    // Delete the category
+                    string deleteQuery = @"
+                DELETE FROM Categories
+                WHERE CategoryID = @CategoryID;";
+
+                    using (SQLiteCommand cmd =
+                           new SQLiteCommand(deleteQuery, con))
+                    {
+                        cmd.Parameters.AddWithValue(
+                            "@CategoryID", selectedCategoryID);
+
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+
+                MessageBox.Show(
+                    ar
+                        ? "تم حذف الفئة بنجاح."
+                        : "Category deleted successfully.",
+                    ar ? "نجاح" : "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LoadCategories();
+                ClearFields();
             }
-            catch (SQLiteException ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Cannot delete this category.\n\n" +
-                    "It may be used by one or more products.\n\n" +
-                    ex.Message,
-                    "Delete Error",
+                    (ar
+                        ? "تعذر حذف الفئة.\n\n"
+                        : "Could not delete category.\n\n")
+                    + ex.Message,
+                    ar ? "خطأ" : "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+
         }
         private void txtCategoryName_TextChanged(object sender, EventArgs e)
         {
@@ -327,6 +371,63 @@ namespace SuperMarketManagementSystem
         {
             LanguageManager.LanguageChanged -= UpdateLanguage;
             base.OnFormClosed(e);
+        }
+
+        private void FormatCategoriesGrid()
+        {
+            // Prevent direct editing
+            dgvCategories.ReadOnly = true;
+            dgvCategories.AllowUserToAddRows = false;
+            dgvCategories.AllowUserToDeleteRows = false;
+
+            // Row and header sizes
+            dgvCategories.RowTemplate.Height = 35;
+            dgvCategories.ColumnHeadersHeight = 40;
+            dgvCategories.AllowUserToResizeRows = false;
+            dgvCategories.AutoSizeRowsMode =
+                DataGridViewAutoSizeRowsMode.None;
+
+            // Font sizes
+            dgvCategories.DefaultCellStyle.Font =
+                new Font("Segoe UI", 11);
+
+            dgvCategories.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 11, FontStyle.Bold);
+
+            // Alignment
+            dgvCategories.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvCategories.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            // Column sizing
+            dgvCategories.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.Fill;
+
+            if (dgvCategories.Columns.Contains("CategoryName"))
+            {
+                dgvCategories.Columns["CategoryName"].FillWeight = 100;
+            }
+
+            // Hide database ID
+            if (dgvCategories.Columns.Contains("CategoryID"))
+            {
+                dgvCategories.Columns["CategoryID"].Visible = false;
+            }
+
+            // Select the entire category row
+            dgvCategories.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
+            dgvCategories.MultiSelect = false;
+
+            // Appearance
+            dgvCategories.BorderStyle = BorderStyle.None;
+            dgvCategories.CellBorderStyle =
+                DataGridViewCellBorderStyle.SingleHorizontal;
+
+            dgvCategories.EnableHeadersVisualStyles = false;
         }
 
 

@@ -49,6 +49,7 @@ namespace SuperMarketManagementSystem
                     adapter.Fill(table);
 
                     dgvCustomers.DataSource = table;
+                    FormatCustomersGrid();
                 }
             }
         }
@@ -321,6 +322,69 @@ namespace SuperMarketManagementSystem
                 }
             }
 
+        }
+
+        private void FormatCustomersGrid()
+        {
+            // Prevent direct editing
+            dgvCustomers.ReadOnly = true;
+            dgvCustomers.AllowUserToAddRows = false;
+            dgvCustomers.AllowUserToDeleteRows = false;
+
+            // Improve row and header sizes
+            dgvCustomers.RowTemplate.Height = 35;
+            dgvCustomers.ColumnHeadersHeight = 40;
+            dgvCustomers.AllowUserToResizeRows = false;
+            dgvCustomers.AutoSizeRowsMode =
+                DataGridViewAutoSizeRowsMode.None;
+
+            // Improve font readability
+            dgvCustomers.DefaultCellStyle.Font =
+                new Font("Segoe UI", 11);
+
+            dgvCustomers.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 11, FontStyle.Bold);
+
+            // Align text
+            dgvCustomers.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvCustomers.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            // Automatically use available width
+            dgvCustomers.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Give the customer name more space
+            if (dgvCustomers.Columns.Contains("CustomerName"))
+            {
+                dgvCustomers.Columns["CustomerName"].FillWeight = 70;
+            }
+
+            if (dgvCustomers.Columns.Contains("Phone"))
+            {
+                dgvCustomers.Columns["Phone"].FillWeight = 40;
+            }
+
+            // Hide the database ID
+            if (dgvCustomers.Columns.Contains("CustomerID"))
+            {
+                dgvCustomers.Columns["CustomerID"].Visible = false;
+            }
+
+            // Selection behavior
+            dgvCustomers.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
+            dgvCustomers.MultiSelect = false;
+
+            // Appearance
+            dgvCustomers.BorderStyle = BorderStyle.None;
+            dgvCustomers.CellBorderStyle =
+                DataGridViewCellBorderStyle.SingleHorizontal;
+
+            dgvCustomers.EnableHeadersVisualStyles = false;
         }
 
         private void txtCustomerName_KeyDown(object sender, KeyEventArgs e)

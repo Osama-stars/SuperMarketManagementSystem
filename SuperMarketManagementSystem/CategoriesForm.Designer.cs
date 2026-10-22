@@ -62,7 +62,7 @@
             // 
             // txtCategoryName
             // 
-            this.txtCategoryName.Location = new System.Drawing.Point(112, 95);
+            this.txtCategoryName.Location = new System.Drawing.Point(145, 98);
             this.txtCategoryName.Name = "txtCategoryName";
             this.txtCategoryName.Size = new System.Drawing.Size(316, 29);
             this.txtCategoryName.TabIndex = 7;

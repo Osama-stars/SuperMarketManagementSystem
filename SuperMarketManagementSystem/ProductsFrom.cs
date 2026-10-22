@@ -22,6 +22,18 @@ namespace SuperMarketManagementSystem
         public ProductsFrom()
         {
             InitializeComponent();
+            cmbUnit.Items.AddRange(new object[]
+{
+    "piece",
+    "kg",
+    "g",
+    "liter",
+    "ml",
+    "box",
+    "pack"
+});
+
+            cmbUnit.SelectedIndex = 0;
 
             LoadCategories();
             LoadProducts();
@@ -72,6 +84,7 @@ namespace SuperMarketManagementSystem
                 p.Price,
                 p.Quantity,
                 p.CategoryID,
+                p.Unit,
                 c.CategoryName
             FROM Products p
             INNER JOIN Categories c
@@ -86,6 +99,7 @@ namespace SuperMarketManagementSystem
                     adapter.Fill(table);
 
                     dgvProducts.DataSource = table;
+                    FormatProductsGrid();
 
                     dgvProducts.Columns["CategoryID"].Visible = false;
                 }
@@ -127,14 +141,16 @@ namespace SuperMarketManagementSystem
                 ProductName,
                 Price,
                 Quantity,
-                CategoryID
+                CategoryID,
+                Unit
             )
             VALUES
             (
                 @ProductName,
                 @Price,
                 @Quantity,
-                @CategoryID
+                @CategoryID,
+                @Unit
             )";
 
                 using (SQLiteCommand cmd =
@@ -157,6 +173,8 @@ namespace SuperMarketManagementSystem
                         "@CategoryID",
                         DbType.Int32).Value =
                         cmbCategory.SelectedValue;
+
+                    cmd.Parameters.AddWithValue("@Unit", cmbUnit.SelectedItem.ToString());
 
                     con.Open();
 
@@ -195,6 +213,7 @@ namespace SuperMarketManagementSystem
             
             
                 ClearFields();
+            cmbUnit.SelectedIndex = 0;
             
         }
 
@@ -254,7 +273,8 @@ namespace SuperMarketManagementSystem
                 ProductName = @ProductName,
                 Price = @Price,
                 Quantity = @Quantity,
-                CategoryID = @CategoryID
+                CategoryID = @CategoryID,
+                Unit = @Unit,
             WHERE ProductID = @ProductID";
 
                 using (SQLiteCommand cmd =
@@ -282,6 +302,8 @@ namespace SuperMarketManagementSystem
                         "@ProductID",
                         DbType.Int32).Value =
                         selectedProductID;
+
+                    cmd.Parameters.AddWithValue("@Unit", cmbUnit.SelectedItem.ToString());
 
                     con.Open();
 
@@ -471,12 +493,13 @@ namespace SuperMarketManagementSystem
             btnUpdate.Text = ar ? "تعديل" : "Update";
             btnDelete.Text = ar ? "حذف" : "Delete";
             btnClear.Text = ar ? "مسح" : "Clear";
-            label1.Text = ar ? "أسم المنتج " : "Product Name:";
+            label1.Text = ar ? "أسم المنتج " : "Product Name";
             label2.Text = ar ? "السعر" : "Price:";
-            label3.Text = ar ? "الكمية " : "Quantity:";
-            label4.Text = ar ? "الصنف " : "Category:";
-            label5.Text = ar ? "بحث " : "Search:";
+            label3.Text = ar ? "الكمية " : "Quantity";
+            label4.Text = ar ? "الصنف " : "Category";
+            label5.Text = ar ? "بحث " : "Search";
             lblBrandTitle.Text = ar ? "نظام إدارة سوبر ماركت" : "SUPERMARKET MANAGEMENT SYSTEM";
+            label6.Text = ar ? "الوحدة" : "Unit";
 
             // Translate the DataGridView headers.
             if (dgvProducts.Columns.Contains("ProductID"))
@@ -522,6 +545,82 @@ namespace SuperMarketManagementSystem
                 case "Sweets": return "حلويات";
                 default: return category;
             }
+        }
+        private void FormatProductsGrid()
+        {
+            // Prevent direct editing
+            dgvProducts.ReadOnly = true;
+            dgvProducts.AllowUserToAddRows = false;
+            dgvProducts.AllowUserToDeleteRows = false;
+
+            // Row and header sizes
+            dgvProducts.RowTemplate.Height = 35;
+            dgvProducts.ColumnHeadersHeight = 40;
+            dgvProducts.AllowUserToResizeRows = false;
+            dgvProducts.AutoSizeRowsMode =
+                DataGridViewAutoSizeRowsMode.None;
+
+            // Font sizes
+            dgvProducts.DefaultCellStyle.Font =
+                new Font("Segoe UI", 11);
+
+            dgvProducts.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 11, FontStyle.Bold);
+
+            // Alignment
+            dgvProducts.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvProducts.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            // Column sizing
+            dgvProducts.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.Fill;
+
+            if (dgvProducts.Columns.Contains("ProductName"))
+                dgvProducts.Columns["ProductName"].FillWeight = 65;
+
+            if (dgvProducts.Columns.Contains("Price"))
+                dgvProducts.Columns["Price"].FillWeight = 30;
+
+            if (dgvProducts.Columns.Contains("Quantity"))
+                dgvProducts.Columns["Quantity"].FillWeight = 25;
+
+            if (dgvProducts.Columns.Contains("Unit"))
+                dgvProducts.Columns["Unit"].FillWeight = 25;
+
+            if (dgvProducts.Columns.Contains("CategoryName"))
+                dgvProducts.Columns["CategoryName"].FillWeight = 40;
+
+            // Format price to two decimal places
+            if (dgvProducts.Columns.Contains("Price"))
+            {
+                dgvProducts.Columns["Price"].DefaultCellStyle.Format = "N2";
+
+                dgvProducts.Columns["Price"].DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleRight;
+            }
+
+            // Hide the database ID
+            if (dgvProducts.Columns.Contains("ProductID"))
+                dgvProducts.Columns["ProductID"].Visible = false;
+
+            if (dgvProducts.Columns.Contains("CategoryID"))
+                dgvProducts.Columns["CategoryID"].Visible = false;
+
+            // Select the entire product row
+            dgvProducts.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
+            dgvProducts.MultiSelect = false;
+
+            // Appearance
+            dgvProducts.BorderStyle = BorderStyle.None;
+            dgvProducts.CellBorderStyle =
+                DataGridViewCellBorderStyle.SingleHorizontal;
+
+            dgvProducts.EnableHeadersVisualStyles = false;
         }
     }
     }

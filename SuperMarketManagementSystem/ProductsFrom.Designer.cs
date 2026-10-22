@@ -47,6 +47,8 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblBrandTitle = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.cmbUnit = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.dgvProducts)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
@@ -58,16 +60,16 @@
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(143, 8);
+            this.label1.Location = new System.Drawing.Point(140, 1);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(237, 62);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Product Name:";
+            this.label1.Text = "Product Name";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtProductName
             // 
-            this.txtProductName.Location = new System.Drawing.Point(114, 82);
+            this.txtProductName.Location = new System.Drawing.Point(114, 66);
             this.txtProductName.Name = "txtProductName";
             this.txtProductName.Size = new System.Drawing.Size(316, 29);
             this.txtProductName.TabIndex = 12;
@@ -77,16 +79,16 @@
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(186, 406);
+            this.label2.Location = new System.Drawing.Point(184, 327);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(148, 55);
             this.label2.TabIndex = 13;
-            this.label2.Text = "Price:";
+            this.label2.Text = "Price";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtPrice
             // 
-            this.txtPrice.Location = new System.Drawing.Point(114, 204);
+            this.txtPrice.Location = new System.Drawing.Point(117, 385);
             this.txtPrice.Name = "txtPrice";
             this.txtPrice.Size = new System.Drawing.Size(316, 29);
             this.txtPrice.TabIndex = 14;
@@ -96,16 +98,16 @@
             // 
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Location = new System.Drawing.Point(169, 270);
+            this.label3.Location = new System.Drawing.Point(169, 219);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(178, 56);
             this.label3.TabIndex = 15;
-            this.label3.Text = "Quantity:";
+            this.label3.Text = "Quantity";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtQuantity
             // 
-            this.txtQuantity.Location = new System.Drawing.Point(111, 473);
+            this.txtQuantity.Location = new System.Drawing.Point(114, 278);
             this.txtQuantity.Name = "txtQuantity";
             this.txtQuantity.Size = new System.Drawing.Size(316, 29);
             this.txtQuantity.TabIndex = 16;
@@ -115,17 +117,17 @@
             // 
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.White;
-            this.label4.Location = new System.Drawing.Point(169, 147);
+            this.label4.Location = new System.Drawing.Point(169, 112);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(178, 54);
             this.label4.TabIndex = 17;
-            this.label4.Text = "Category:";
+            this.label4.Text = "Category";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cmbCategory
             // 
             this.cmbCategory.FormattingEnabled = true;
-            this.cmbCategory.Location = new System.Drawing.Point(111, 342);
+            this.cmbCategory.Location = new System.Drawing.Point(114, 169);
             this.cmbCategory.Name = "cmbCategory";
             this.cmbCategory.Size = new System.Drawing.Size(319, 32);
             this.cmbCategory.TabIndex = 18;
@@ -242,15 +244,17 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.cmbUnit);
+            this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.label4);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.cmbCategory);
+            this.panel1.Controls.Add(this.txtPrice);
             this.panel1.Controls.Add(this.txtQuantity);
             this.panel1.Controls.Add(this.btnUpdate);
             this.panel1.Controls.Add(this.btnDelete);
             this.panel1.Controls.Add(this.btnClear);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.txtPrice);
             this.panel1.Controls.Add(this.btnAdd);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.txtProductName);
@@ -259,6 +263,26 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(625, 835);
             this.panel1.TabIndex = 2;
+            // 
+            // cmbUnit
+            // 
+            this.cmbUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbUnit.FormattingEnabled = true;
+            this.cmbUnit.Location = new System.Drawing.Point(111, 485);
+            this.cmbUnit.Name = "cmbUnit";
+            this.cmbUnit.Size = new System.Drawing.Size(319, 32);
+            this.cmbUnit.TabIndex = 24;
+            // 
+            // label6
+            // 
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.ForeColor = System.Drawing.Color.White;
+            this.label6.Location = new System.Drawing.Point(184, 427);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(148, 55);
+            this.label6.TabIndex = 23;
+            this.label6.Text = "Unit";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panel2
             // 
@@ -315,5 +339,7 @@
         private System.Windows.Forms.Label lblBrandTitle;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.ComboBox cmbUnit;
+        private System.Windows.Forms.Label label6;
     }
 }

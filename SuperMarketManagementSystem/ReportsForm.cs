@@ -44,37 +44,36 @@ namespace SuperMarketManagementSystem
                 string query = @"
             SELECT
                 s.SaleID,
-                ISNULL(c.CustomerName, 'Walk-in Customer') AS Customer,
-                u.Username AS UserName,
+                IFNULL(c.CustomerName, 'Walk-in Customer') AS Customer,
+                IFNULL(u.Username, 'N/A') AS UserName,
                 s.SaleDate,
                 s.TotalAmount
             FROM Sales s
             LEFT JOIN Customers c
                 ON s.CustomerID = c.CustomerID
-            INNER JOIN Users u
+            LEFT JOIN Users u
                 ON s.UserID = u.UserID
-            WHERE s.SaleDate >= @FromDate
-              AND s.SaleDate < @ToDate
-            ORDER BY s.SaleDate DESC";
+            WHERE datetime(s.SaleDate) >= datetime(@FromDate)
+              AND datetime(s.SaleDate) < datetime(@ToDate)
+            ORDER BY datetime(s.SaleDate) DESC";
 
                 using (SQLiteDataAdapter adapter =
                        new SQLiteDataAdapter(query, con))
                 {
-                    adapter.SelectCommand.Parameters.Add(
+                    adapter.SelectCommand.Parameters.AddWithValue(
                         "@FromDate",
-                        DbType.DateTime).Value =
-                        dtpFrom.Value.Date;
+                        dtpFrom.Value.Date.ToString("yyyy-MM-dd"));
 
-                    adapter.SelectCommand.Parameters.Add(
+                    adapter.SelectCommand.Parameters.AddWithValue(
                         "@ToDate",
-                        DbType.DateTime).Value =
-                        dtpTo.Value.Date.AddDays(1);
+                        dtpTo.Value.Date.AddDays(1).ToString("yyyy-MM-dd"));
 
                     DataTable table = new DataTable();
 
                     adapter.Fill(table);
 
                     dgvReport.DataSource = table;
+                    FormatReportGrid();
 
                     CalculateTotal(table);
                 }
@@ -100,20 +99,24 @@ namespace SuperMarketManagementSystem
         private void btnSearch_Click(object sender, EventArgs e)
         {
 
+
             if (dtpFrom.Value.Date > dtpTo.Value.Date)
             {
                 MessageBox.Show(
-    LanguageManager.IsArabic
-        ? "لا يمكن أن يكون تاريخ البداية بعد تاريخ النهاية."
-        : "From date cannot be greater than To date.",
-    LanguageManager.IsArabic
-        ? "تاريخ غير صالح"
-        : "Invalid Date",
-    MessageBoxButtons.OK,
-    MessageBoxIcon.Warning);
+                    LanguageManager.IsArabic
+                        ? "لا يمكن أن يكون تاريخ البداية بعد تاريخ النهاية."
+                        : "From date cannot be greater than To date.",
+                    LanguageManager.IsArabic
+                        ? "تاريخ غير صالح"
+                        : "Invalid Date",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
             }
 
             LoadReport();
+
 
         }
 
@@ -165,6 +168,83 @@ namespace SuperMarketManagementSystem
         {
             LanguageManager.LanguageChanged -= UpdateLanguage;
             base.OnFormClosed(e);
+        }
+
+        private void FormatReportGrid()
+        {
+            // Prevent direct editing
+            dgvReport.ReadOnly = true;
+            dgvReport.AllowUserToAddRows = false;
+            dgvReport.AllowUserToDeleteRows = false;
+
+            // Row and header sizes
+            dgvReport.RowTemplate.Height = 35;
+            dgvReport.ColumnHeadersHeight = 40;
+            dgvReport.AllowUserToResizeRows = false;
+            dgvReport.AutoSizeRowsMode =
+                DataGridViewAutoSizeRowsMode.None;
+
+            // Font sizes
+            dgvReport.DefaultCellStyle.Font =
+                new Font("Segoe UI", 11);
+
+            dgvReport.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 11, FontStyle.Bold);
+
+            // Alignment
+            dgvReport.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvReport.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            // Column sizing
+            dgvReport.AutoSizeColumnsMode =
+                DataGridViewAutoSizeColumnsMode.Fill;
+
+            if (dgvReport.Columns.Contains("SaleID"))
+                dgvReport.Columns["SaleID"].FillWeight = 20;
+
+            if (dgvReport.Columns.Contains("Customer"))
+                dgvReport.Columns["Customer"].FillWeight = 45;
+
+            if (dgvReport.Columns.Contains("UserName"))
+                dgvReport.Columns["UserName"].FillWeight = 35;
+
+            if (dgvReport.Columns.Contains("SaleDate"))
+                dgvReport.Columns["SaleDate"].FillWeight = 45;
+
+            if (dgvReport.Columns.Contains("TotalAmount"))
+                dgvReport.Columns["TotalAmount"].FillWeight = 30;
+
+            // Format total amounts to two decimal places
+            if (dgvReport.Columns.Contains("TotalAmount"))
+            {
+                dgvReport.Columns["TotalAmount"].DefaultCellStyle.Format = "N2";
+
+                dgvReport.Columns["TotalAmount"].DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleRight;
+            }
+
+            // Align sale IDs to the center
+            if (dgvReport.Columns.Contains("SaleID"))
+            {
+                dgvReport.Columns["SaleID"].DefaultCellStyle.Alignment =
+                    DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            // Select the entire sale row
+            dgvReport.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
+            dgvReport.MultiSelect = false;
+
+            // Appearance
+            dgvReport.BorderStyle = BorderStyle.None;
+            dgvReport.CellBorderStyle =
+                DataGridViewCellBorderStyle.SingleHorizontal;
+
+            dgvReport.EnableHeadersVisualStyles = false;
         }
 
 

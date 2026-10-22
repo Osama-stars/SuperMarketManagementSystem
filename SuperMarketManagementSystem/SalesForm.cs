@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Drawing;
+using System.Drawing.Printing;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,9 +16,15 @@ namespace SuperMarketManagementSystem
 {
     public partial class SalesForm : Form
     {
+
         private int userID;
         private decimal totalAmount = 0;
         private SQLiteDataAdapter adapter;
+        private PrintDocument receiptDocument;
+        private int lastSaleID = 0;
+        private List<string> receiptLines = new List<string>();
+        private int receiptLineIndex = 0;
+        
 
         public SalesForm(int userID)
         {
@@ -71,7 +78,7 @@ namespace SuperMarketManagementSystem
             using (SQLiteConnection con = Database.GetConnection())
             {
                 string query = @"
-            SELECT ProductID, ProductName, Price, Quantity
+            SELECT ProductID, ProductName, Price, Quantity, Unit
             FROM Products
             WHERE Quantity > 0
             ORDER BY ProductName";
@@ -93,6 +100,7 @@ namespace SuperMarketManagementSystem
 
         private void SetupCart()
         {
+
             dgvCart.Columns.Clear();
 
             dgvCart.Columns.Add("ProductID", "Product ID");
@@ -101,12 +109,60 @@ namespace SuperMarketManagementSystem
             dgvCart.Columns.Add("Quantity", "Quantity");
             dgvCart.Columns.Add("Subtotal", "Subtotal");
 
+            // Hide ProductID
             dgvCart.Columns["ProductID"].Visible = false;
 
+            // Make the grid read-only
             dgvCart.AllowUserToAddRows = false;
             dgvCart.ReadOnly = true;
             dgvCart.SelectionMode =
                 DataGridViewSelectionMode.FullRowSelect;
+
+            // Improve readability
+            dgvCart.RowTemplate.Height = 35;
+            dgvCart.ColumnHeadersHeight = 40;
+
+            dgvCart.DefaultCellStyle.Font =
+                new Font("Segoe UI", 11);
+
+            dgvCart.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 11, FontStyle.Bold);
+
+            // Align text vertically in the middle
+            dgvCart.DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvCart.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleCenter;
+
+            // Format prices to two decimal places
+            dgvCart.Columns["Price"].DefaultCellStyle.Format = "N2";
+            dgvCart.Columns["Subtotal"].DefaultCellStyle.Format = "N2";
+
+            dgvCart.Columns["Price"].DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+
+            dgvCart.Columns["Subtotal"].DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleRight;
+
+            // Make Product wider than the other columns
+            dgvCart.Columns["ProductName"].AutoSizeMode =
+                DataGridViewAutoSizeColumnMode.Fill;
+
+            dgvCart.Columns["Price"].Width = 100;
+            dgvCart.Columns["Quantity"].Width = 100;
+            dgvCart.Columns["Subtotal"].Width = 110;
+
+            // Prevent users from manually resizing rows
+            dgvCart.AllowUserToResizeRows = false;
+
+            // Improve appearance
+            dgvCart.BorderStyle = BorderStyle.None;
+            dgvCart.CellBorderStyle =
+                DataGridViewCellBorderStyle.SingleHorizontal;
+
+            dgvCart.EnableHeadersVisualStyles = false;
+
         }
 
         private void cmbProduct_SelectedIndexChanged(object sender, EventArgs e)
@@ -156,6 +212,9 @@ namespace SuperMarketManagementSystem
 
             int quantity =
                 Convert.ToInt32(nudQuantity.Value);
+
+            string Unit =
+                product["Unit"].ToString();
 
             if (quantity > availableQuantity)
             {
@@ -248,12 +307,12 @@ namespace SuperMarketManagementSystem
                     {
                         // 3. Insert Sale
                         string saleQuery = @"
-                    INSERT INTO Sales
-                    (CustomerID, UserID, SaleDate, TotalAmount)
-                    VALUES
-                    (@CustomerID, @UserID, GETDATE(), @TotalAmount);
+    INSERT INTO Sales
+    (CustomerID, UserID, SaleDate, TotalAmount)
+    VALUES
+    (@CustomerID, @UserID, CURRENT_TIMESTAMP, @TotalAmount);
 
-                    SELECT SCOPE_IDENTITY();";
+    SELECT last_insert_rowid();";
 
                         int saleID;
 
@@ -361,6 +420,7 @@ namespace SuperMarketManagementSystem
 
                         // 5. Commit transaction
                         transaction.Commit();
+                        lastSaleID = saleID;
 
                         MessageBox.Show(
                             "Sale completed successfully.\nSale ID: "
@@ -463,6 +523,7 @@ namespace SuperMarketManagementSystem
             label4.Text = ar ? "الكمية" : "Quantity";
             label3.Text = ar ? "السعر" : "Price";
             label5.Text = ar ? "الأجمالي" : "Total:";
+            btnPrintBill.Text = ar ? "طباعة" : "Print Bill";
 
             if (dgvCart.Columns.Contains("ProductID"))
                 dgvCart.Columns["ProductID"].HeaderText =
@@ -492,6 +553,188 @@ namespace SuperMarketManagementSystem
         {
             LanguageManager.LanguageChanged -= UpdateLanguage;
             base.OnFormClosed(e);
+        }
+
+        private bool PrepareReceipt(int saleID)
+        {
+            receiptLines.Clear();
+
+            using (SQLiteConnection con = Database.GetConnection())
+            {
+                con.Open();
+
+                string saleQuery = @"
+            SELECT Sales.SaleID,
+                   Sales.SaleDate,
+                   Sales.TotalAmount,
+                   Customers.CustomerName
+            FROM Sales
+            LEFT JOIN Customers
+                ON Sales.CustomerID = Customers.CustomerID
+            WHERE Sales.SaleID = @SaleID;";
+
+                using (SQLiteCommand cmd = new SQLiteCommand(saleQuery, con))
+                {
+                    cmd.Parameters.AddWithValue("@SaleID", saleID);
+
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                            return false;
+
+                        receiptLines.Add("       SUPERMARKET");
+                        receiptLines.Add("     MANAGEMENT SYSTEM");
+                        receiptLines.Add("--------------------------------");
+                        receiptLines.Add("Receipt No: " + reader["SaleID"]);
+                        receiptLines.Add("Date: " + reader["SaleDate"]);
+                        receiptLines.Add(
+                            "Customer: " +
+                            (reader["CustomerName"] == DBNull.Value
+                                ? "Walk-in Customer"
+                                : reader["CustomerName"].ToString()));
+
+                        receiptLines.Add("--------------------------------");
+                        receiptLines.Add("Item");
+                        receiptLines.Add("Qty     Price       Subtotal");
+                        receiptLines.Add("--------------------------------");
+                    }
+                }
+
+                string detailsQuery = @"
+            SELECT Products.ProductName,
+                   SaleDetails.Quantity,
+                   SaleDetails.Price,
+                   Products.Unit
+            FROM SaleDetails
+            INNER JOIN Products
+                ON SaleDetails.ProductID = Products.ProductID
+            WHERE SaleDetails.SaleID = @SaleID;";
+
+                using (SQLiteCommand cmd = new SQLiteCommand(detailsQuery, con))
+                {
+                    cmd.Parameters.AddWithValue("@SaleID", saleID);
+
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader["ProductName"].ToString();
+                            int quantity = Convert.ToInt32(reader["Quantity"]);
+                            decimal price = Convert.ToDecimal(reader["Price"]);
+                            string unit = reader["Unit"] == DBNull.Value
+                                ? ""
+                                : reader["Unit"].ToString();
+
+                            decimal subtotal = quantity * price;
+
+                            receiptLines.Add(name);
+                            receiptLines.Add(
+                                $"{quantity} {unit}  x  {price:0.00}  =  {subtotal:0.00}");
+                        }
+                    }
+                }
+
+                string totalQuery =
+                    "SELECT TotalAmount FROM Sales WHERE SaleID = @SaleID;";
+
+                using (SQLiteCommand cmd = new SQLiteCommand(totalQuery, con))
+                {
+                    cmd.Parameters.AddWithValue("@SaleID", saleID);
+
+                    decimal total = Convert.ToDecimal(cmd.ExecuteScalar());
+
+                    receiptLines.Add("--------------------------------");
+                    receiptLines.Add($"TOTAL: {total:0.00}");
+                    receiptLines.Add("--------------------------------");
+                    receiptLines.Add("     Thank you for shopping!");
+                    receiptLines.Add("          Visit again");
+                }
+            }
+
+            return true;
+        }
+
+        private void ReceiptDocument_PrintPage(
+    object sender,
+    PrintPageEventArgs e)
+        {
+            using (Font font = new Font("Consolas", 9))
+            using (Brush brush = new SolidBrush(Color.Black))
+            {
+                float y = 20;
+                float lineHeight = font.GetHeight(e.Graphics) + 4;
+
+                while (receiptLineIndex < receiptLines.Count)
+                {
+                    if (y + lineHeight > e.MarginBounds.Bottom)
+                    {
+                        e.HasMorePages = true;
+                        return;
+                    }
+
+                    e.Graphics.DrawString(
+                        receiptLines[receiptLineIndex],
+                        font,
+                        brush,
+                        e.MarginBounds.Left,
+                        y);
+
+                    y += lineHeight;
+                    receiptLineIndex++;
+                }
+            }
+
+            e.HasMorePages = false;
+        }
+
+        private void btnPrintBill_Click(object sender, EventArgs e)
+        {
+
+            if (lastSaleID <= 0)
+            {
+                MessageBox.Show(
+                    "Please complete a sale before printing a receipt.",
+                    "No Receipt",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            try
+            {
+                if (!PrepareReceipt(lastSaleID))
+                {
+                    MessageBox.Show("The sale receipt could not be found.");
+                    return;
+                }
+
+                using (PrintDialog dialog = new PrintDialog())
+                using (PrintDocument document = new PrintDocument())
+                {
+                    receiptDocument = document;
+                    receiptDocument.PrintPage += ReceiptDocument_PrintPage;
+
+                    dialog.Document = receiptDocument;
+
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        receiptLineIndex = 0;
+                        receiptDocument.Print();
+                    }
+
+                    receiptDocument.PrintPage -= ReceiptDocument_PrintPage;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Could not print the receipt.\n\n" + ex.Message,
+                    "Printing Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+
         }
     }
 }
